@@ -1,0 +1,223 @@
+# ============================================
+# NHL Game Pricing & Analytics Pipeline
+# ============================================
+
+# ============================================
+# SECRETS & ENVIRONMENT
+# ============================================
+*.env
+!.env.example
+shared/config/.env
+infra/docker/.env
+pipelines/.env
+
+# ============================================
+# PYTHON
+# ============================================
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+*.virtualenv
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Testing / Coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+*.cover
+.hypothesis/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# pyenv
+.python-version
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# ============================================
+# JAVA / GRADLE / KOTLIN
+# ============================================
+# Gradle
+.gradle/
+build/
+gradle-app.setting
+!gradle-wrapper.jar
+.gradletasknamecache
+
+# Gradle wrapper (keep wrapper jar, ignore exe)
+gradlew
+gradlew.bat
+gradle/
+
+# Backend API specific
+backend-api/.gradle/
+backend-api/build/
+backend-api/gradle/
+backend-api/gradlew
+backend-api/gradlew.bat
+backend-api/gradle.properties
+backend-api/out/
+
+# IntelliJ IDEA
+*.iml
+*.ipr
+*.iws
+out/
+
+# ============================================
+# NODE / FRONTEND
+# ============================================
+node_modules/
+.next/
+dist/
+.turbo/
+.cache/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn/
+
+# ============================================
+# IDE / EDITOR
+# ============================================
+# IntelliJ IDEA
+.idea/
+!.idea/runConfigurations/
+*.iml
+
+# VSCode
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# ============================================
+# AI ASSISTANTS
+# ============================================
+.claude/
+.claude-plugin/
+.cursor/
+.aider*
+
+# ============================================
+# DATA & LOGS
+# ============================================
+# Data files (CSV, JSON dumps, backups)
+data/
+*.csv
+*.parquet
+*.feather
+*.pickle
+*.pkl
+
+# Logs
+logs/
+*.log
+nul
+
+# Archives
+archive/
+archive_*/
+*.zip
+*.tar.gz
+*.tar.bz2
+
+# ============================================
+# DATABASES
+# ============================================
+*.db
+*.sqlite
+*.sqlite3
+*.dump
+*.sql.gz
+
+# ============================================
+# DOCKER
+# ============================================
+# Don't ignore docker-compose.yml or Dockerfiles
+# But ignore docker data volumes
+.docker/
+docker-compose.override.yml
+
+# ============================================
+# OS / SYSTEM
+# ============================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+
+# ============================================
+# GIT
+# ============================================
+.git.backup
+
+# ============================================
+# TEMP / MISC
+# ============================================
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.cache
+tmp/
+temp/
+
+# Session notes / analysis (keep in repo for portfolio value)
+# but exclude any with sensitive data
+# SESSIONS_*.md - keeping these for documentation
+
+# Utility scripts (keep for portfolio)
+# check_*.py - keeping these
+# diagnose_*.py - keeping these
+# analyze_*.py - keeping these
