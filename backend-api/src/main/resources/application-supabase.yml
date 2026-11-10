@@ -1,0 +1,25 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    # Supabase connection using environment variables
+    # Set these in your environment or .env file:
+    #   SUPABASE_DB_HOST=aws-1-us-east-2.pooler.supabase.com
+    #   SUPABASE_DB_PORT=6543
+    #   SUPABASE_DB_NAME=postgres
+    #   SUPABASE_DB_USER=postgres.tpsmibvlgalbuurplbhu
+    #   SUPABASE_DB_PASSWORD=your_actual_password
+    url: jdbc:postgresql://${SUPABASE_DB_HOST:aws-1-us-east-2.pooler.supabase.com}:${SUPABASE_DB_PORT:6543}/${SUPABASE_DB_NAME:postgres}?user=${SUPABASE_DB_USER:postgres}&password=${SUPABASE_DB_PASSWORD}&sslmode=require
+    username: ${SUPABASE_DB_USER:postgres}
+    password: ${SUPABASE_DB_PASSWORD}
+
+  flyway:
+    enabled: false  # Set to true if you want Spring Boot to run migrations on startup
+
+  datasource.hikari:
+    maximum-pool-size: 2     # keep it tiny on the pooler
+    minimum-idle: 0
+    idle-timeout: 15000      # 15s
+    max-lifetime: 60000      # 60s
+    connection-timeout: 10000
