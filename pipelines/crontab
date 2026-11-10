@@ -1,0 +1,1 @@
+0 10 * * * echo "$(date): Starting pipeline" >> /var/log/cron.log && python -m run_all >> /proc/1/fd/1 2>&1

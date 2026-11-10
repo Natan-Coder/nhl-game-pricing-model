@@ -1,0 +1,93 @@
+# name helps keep networks/volumes tidy
+name: nhl-betting
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: nhl_postgres
+    restart: unless-stopped
+    env_file:
+      - ../../shared/config/.env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      # bind only to localhost; default to 5433 if not set
+      - "${POSTGRES_PORT:-55432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  pgadmin:
+    image: dpage/pgadmin4:8
+    container_name: nhl_pgadmin_database
+    restart: unless-stopped
+    env_file:
+      - ../../shared/config/.env
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "127.0.0.1:5050:80"
+    depends_on:
+      - postgres
+
+  flyway:
+    image: flyway/flyway:10
+    container_name: nhl_flyway_migrations
+    command: -connectRetries=60 migrate
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - ../../shared/config/.env
+    environment:
+      FLYWAY_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?prepareThreshold=0
+      FLYWAY_USER: ${POSTGRES_USER}
+      FLYWAY_PASSWORD: ${POSTGRES_PASSWORD}
+      FLYWAY_SCHEMAS: public
+      FLYWAY_BASELINE_ON_MIGRATE: false
+      FLYWAY_LOCATIONS: filesystem:/flyway/sql
+    volumes:
+      - ../db/migrations:/flyway/sql:ro
+
+  pipeline-runner:
+    build: ../../pipelines
+    container_name: nhl_betting_automation
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - ../../pipelines/.env
+    volumes:
+      - ../../:/project
+    working_dir: /project/pipelines
+    environment:
+      - PYTHONPATH=/project
+      - TZ=America/New_York
+
+  backend-api:
+    build: ../../backend-api
+    container_name: nhl_backend_api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    env_file:
+      - ../../shared/config/.env
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+
+
+volumes:
+  pgdata:
+

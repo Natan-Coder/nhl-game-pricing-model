@@ -1,0 +1,81 @@
+from datetime import date, timedelta
+from decimal import Decimal
+import logging, os, requests, psycopg
+from pipelines.config import DATABASE_URL
+from pipelines.common.db import connect, execute_many
+from pipelines.common.logging_setup import setup as log_setup
+
+log_setup()
+log = logging.getLogger(__name__)
+
+API_BASE = "https://api-web.nhle.com/v1"
+
+def daterange(d0: date, d1: date):
+    delta = (d1 - d0).days
+    for i in range(delta + 1):
+        yield d0 + timedelta(days=i)
+        
+def fetch_scoreboard(d: date) -> dict:
+    url = f"{API_BASE}/scoreboard/{d:%Y-%m-%d}"
+    r = requests.get(url, timeout=20, headers={"User-Agent": "nhl-betting-model/1.0"})
+    r.raise_for_status()
+    return r.json()
+
+def to_rows(payload: dict):
+    """
+    Transform scoreboard JSON -> rows for game_features (or your schedule table).
+    Expected keys (typical): games[], each with:
+      - id (e.g., 2024020240)             -> game_id
+      - startTimeUTC (ISO string)         -> game_datetime_utc
+      - homeTeam.abbrev / awayTeam.abbrev -> team codes
+      - venue / tvBroadcasts (optional)
+    We use .get() to be tolerant of minor shape changes.
+    """
+    games = payload.get("games", [])
+    for g in games:
+        game_id = int(g.get("id"))
+        start_utc = g.get("startTimeUTC") or g.get("startTime") # fallback
+        home = (g.get("homeTeam") or {}).get("abbrev")
+        away = (g.get("awayTeam") or {}).get("abbrev")
+        venue = (g.get("venue") or {}).get("abbrev")
+        if game_id and home and away and start_utc:
+            yield (game_id, start_utc, home, away, venue)
+
+SQL_UPSERT = """
+INSERT INTO game_features (game_id, game_datetime_utc, home_team, away_team, venue)
+VALUES (%s, %s, %s, %s, %s)
+ON CONFLICT (game_id) DO UPDATE
+SET game_datetime_utc = EXCLUDED.game_datetime_utc,
+    home_team = EXCLUDED.home_team,
+    away_team = EXCLUDED.away_team,
+    venue = EXCLUDED.venue;
+"""
+
+def main():
+    
+    start = date.today() - timedelta(days=1)
+    end   = date.today() + timedelta(days=3)
+    log.info(f"Fetching schedule for {start} to {end}")
+    
+    rows_to_write = []
+    for d in daterange(start, end):
+        try:
+            data = fetch_scoreboard(d)
+            rows_to_write.extend(list(to_rows(data)))
+        except requests.HTTPError as e:
+            log.warning("HTTP error for %s: %s", d, e)
+        except Exception as e:
+            log.warning("Parse error for %s: %s", d, e)
+            
+    if not rows_to_write:
+        log.info("No games found in window.")
+        return
+    
+    with psycopg.connect(DATABASE_URL) as conn, conn.cursor() as cur:
+        cur.executemany(SQL_UPSERT, rows_to_write)
+        conn.commit()
+    log.info("Upserted %d games.", len(rows_to_write))
+
+    
+if __name__ == "__main__":
+    main()
