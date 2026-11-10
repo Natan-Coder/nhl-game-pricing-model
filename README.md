@@ -320,6 +320,10 @@ This is a personal portfolio project, but I'm open to collaboration! If you have
 
 Feel free to open an issue or submit a pull request.
 
+## 📌 Note on Model Parameters
+
+While this codebase is open-source for educational and portfolio purposes, certain tuned parameters (Elo K-factors, Platt scaling coefficients, feature weights, etc.) in production use may differ from those committed to this repository. The methodology, architecture, and implementation approach are fully transparent to demonstrate data engineering and modeling capabilities.
+
 ## ⚖️ Disclaimer
 
 This project is for **educational and analytical purposes only**. It demonstrates:
